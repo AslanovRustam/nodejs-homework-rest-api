@@ -1,34 +1,25 @@
-const fs = require("fs/promises");
-const contactsPath = require("./contacts.json");
-const path = require("path");
+// const fs = require("fs/promises");
+// const contactsPath = require("./contacts.json");
+// const path = require("path");
 const shortid = require("shortid");
 const db = require("./db");
 
 // const contactsPath = path.join(__dirname, "./model", "./contacts.json");
 
 const listContacts = async () => {
-  // const data = fs.readFile(contactsPath, "utf8", (err, data) => {
-  //   if (err) {
-  //     console.log("Error:", err);
-  //     return;
-  //   }
-  //   return data;
-  // });
-  // return JSON.parse(data);
-  return await db.get("contacts").value();
-  // return await db.value();
-  // return db.get("contacts");
+  return await db.value();
 };
 
 const getContactById = async (contactId) => {
-  // try {
-  //   const contacts = await listContacts();
-  //   const contactById = contacts.find(({ id }) => id.toString() === contactId);
-  //   return contactById;
-  // } catch (error) {
-  //   console.log("Error:", error);
-  // }
-  return db.get("contacts").find({ contactId }).write();
+  // const contacts = await listContacts();
+  // const contactToFind = contacts.find(
+  //   (contact) => String(contact.id) === contactId
+  // );
+  // return contactToFind;
+  const normalizeId = (id) => Number(id) || id;
+  const id = normalizeId(contactId);
+  // const id = String(contactId);
+  return await db.find({ id }).value();
 };
 
 const removeContact = async (contactId) => {
@@ -48,7 +39,7 @@ const removeContact = async (contactId) => {
   //   console.log(err)
   // );
   // return deletedContact;
-  const [record] = db.get("contacts").remove({ contactId }).write();
+  const [record] = await db.remove({ contactId }).write();
   return record;
 };
 
@@ -71,7 +62,9 @@ const addContact = async (body) => {
     id,
     ...body,
   };
-  db.get("contacts").push(record).write();
+  // db.get("contacts").push(record).write();
+  db.push(record).write();
+
   return record;
 };
 
@@ -93,9 +86,11 @@ const updateContact = async (contactId, body) => {
   //   console.log(err)
   // );
   // return newContact;
-  const record = db.get("contacts").find({ id }).assign(body).value();
+
+  // const record = db.find({ contactId }).assign(body).write();
+  const record = await db.find({ contactId }).assign(body).value();
   db.write();
-  return record.id ? record : null;
+  return record.contactId ? record : null;
 };
 
 module.exports = {
