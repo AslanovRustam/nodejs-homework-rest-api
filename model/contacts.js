@@ -15,8 +15,9 @@ const listContacts = async () => {
   //   return data;
   // });
   // return JSON.parse(data);
-  // return db.get("contacts").value;
-  return db.get("contacts");
+  return await db.get("contacts").value();
+  // return await db.value();
+  // return db.get("contacts");
 };
 
 const getContactById = async (contactId) => {
