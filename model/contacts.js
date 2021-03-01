@@ -1,43 +1,37 @@
-// const fs = require("fs/promises");
-// const contactsPath = require("./contacts.json");
-// const path = require("path");
-const shortid = require("shortid");
-const db = require("./db");
-const normalizeId = require("./normalize");
-// const contactsPath = path.join(__dirname, "./model", "./contacts.json");
+const Contact = require("./schemas/contactShema");
+// const shortid = require("shortid");
+// const db = require("./db");
+// const normalizeId = require("./normalize");
 
 const listContacts = async () => {
-  return await db.value();
+  const results = await Contact.find({});
+  return results;
 };
 
-const getContactById = async (contactId) => {
-  const id = normalizeId(contactId);
-  return await db.find({ id }).value();
-};
-
-const removeContact = async (contactId) => {
-  const id = normalizeId(contactId);
-  const [record] = await db.remove({ id }).write();
-  return record;
+const getContactById = async (id) => {
+  const result = await Contact.findOne({ _id: id });
+  console.log(result.id);
+  console.log(result._id);
+  return result;
 };
 
 const addContact = async (body) => {
-  const id = shortid();
-  const record = {
-    id,
-    ...body,
-  };
-  db.push(record).write();
-
-  return record;
+  const result = await Contact.create(body);
+  return result;
 };
 
-const updateContact = async (contactId, body) => {
-  const id = normalizeId(contactId);
-  // const record = await db.find({ id }).assign(body).write();
-  const record = await db.find({ id }).assign(body).value();
-  db.write();
-  return record.contactId ? record : null;
+const updateContact = async (id, body) => {
+  const result = await Contact.findByIdAndUpdate(
+    { _id: id },
+    { ...body },
+    { new: true }
+  );
+  return result;
+};
+
+const removeContact = async (id) => {
+  const result = await Contact.findByIdAndRemove({ _id: id });
+  return result;
 };
 
 module.exports = {
