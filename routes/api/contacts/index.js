@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 // const Contacts = require("../../model/contacts");
 const validate = require("./validation");
-const ContactsController = require("../../controlers/contactsControler");
+const ContactsController = require("../../../controlers/contactsControler");
+const guard = require("../../../helpers/guard");
 
 // router.get("/", async (req, res, next) => {
 //   try {
@@ -106,16 +107,22 @@ const ContactsController = require("../../controlers/contactsControler");
 //   }
 // });
 
-router.get("/", ContactsController.getAllContacts);
+router.get("/", guard, ContactsController.getAllContacts);
 
-router.get("/:contactId", ContactsController.getContactById);
+router.get("/:contactId", guard, ContactsController.getContactById);
 
-router.post("/", validate.createContact, ContactsController.createContact);
+router.post(
+  "/",
+  guard,
+  validate.createContact,
+  ContactsController.createContact
+);
 
-router.delete("/:contactId", ContactsController.deleteContact);
+router.delete("/:contactId", guard, ContactsController.deleteContact);
 
 router.patch(
   "/:contactId",
+  guard,
   validate.updateContact,
   ContactsController.patchContact
 );
