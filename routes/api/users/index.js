@@ -17,4 +17,6 @@ router.patch(
   UsersController.avatars
 );
 
+router.get("/verify/:token", UsersController.verify);
+
 module.exports = router;
