@@ -33,7 +33,9 @@ const reg = async (req, res, next) => {
     }
     const verifyToken = nanoid();
     const emailService = new EmailService(process.env.NODE_ENV);
-    await emailService.sendEmail(verifyToken, email, name);
+    // await emailService.sendEmail(verifyToken, email, name);
+    await emailService.sendEmail(verifyToken, email);
+
     const newUser = await Users.create({
       ...req.body,
       verify: false,
@@ -61,7 +63,7 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await Users.findByEmail(email);
     const isValidPassword = await user?.validPassword(password);
-    if (!user || !isValidPassword || !user.verify) {
+    if (!user || !isValidPassword) {
       return res.status(HttpCode.UNAUTHORIZED).json({
         status: "error",
         code: HttpCode.UNAUTHORIZED,
