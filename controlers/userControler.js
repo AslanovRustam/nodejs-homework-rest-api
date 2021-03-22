@@ -7,6 +7,8 @@ const fs = require("fs").promises;
 const path = require("path");
 const cloudinary = require("cloudinary").v2;
 const { promisify } = require("util");
+const { nanoid } = require("nanoid");
+const EmailService = require("../services/email");
 
 const SECRET_KEY = process.env.JWT_SECRET;
 cloudinary.config({
@@ -29,7 +31,16 @@ const reg = async (req, res, next) => {
         message: "Email is already used",
       });
     }
-    const newUser = await Users.create(req.body);
+    const verifyToken = nanoid();
+    const emailService = new EmailService(process.env.NODE_ENV);
+    // await emailService.sendEmail(verifyToken, email, name);
+    await emailService.sendEmail(verifyToken, email);
+
+    const newUser = await Users.create({
+      ...req.body,
+      verify: false,
+      verifyToken,
+    });
     return res.status(HttpCode.CREATED).json({
       status: "success",
       code: HttpCode.CREATED,
@@ -175,4 +186,26 @@ const saveAvatarToCloud = async (req) => {
   return result;
 };
 
-module.exports = { reg, login, logout, getCurrentUser, avatars };
+const verify = async (req, res, next) => {
+  try {
+    const user = await Users.findByVerifyToken(req.params.token);
+    if (user) {
+      await Users.updateVerifyToken(user.id, true, null);
+      return res.json({
+        status: "success",
+        code: HttpCode.OK,
+        message: "Verification successful!",
+      });
+    }
+    return res.status(HttpCode.BAD_REQUEST).json({
+      status: "error",
+      code: HttpCode.BAD_REQUEST,
+      data: "Bad request",
+      message: "Link is not valid",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = { reg, login, logout, getCurrentUser, avatars, verify };
